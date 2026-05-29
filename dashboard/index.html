@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CryptoGateway Validator — Agentic Testing for Web3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <div class="masthead-mark">
+      <span class="mark-block"></span>
+      <div class="mark-text">
+        <span class="mark-title">CryptoGateway</span>
+        <span class="mark-sub">VALIDATOR // v1.0</span>
+      </div>
+    </div>
+    <div class="masthead-meta">
+      <span class="meta-pill" id="proxyStatus" data-state="checking">
+        <span class="meta-dot"></span>
+        <span class="meta-text">PROXY: CHECKING…</span>
+      </span>
+      <span class="meta-pill static">
+        <span class="meta-dot live"></span>
+        <span class="meta-text">SEPOLIA // LIVE</span>
+      </span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="setup" role="tab"><span class="tab-index">01</span><span class="tab-label">SETUP</span></button>
+    <button class="tab" data-tab="run" role="tab" disabled><span class="tab-index">02</span><span class="tab-label">RUN</span></button>
+    <button class="tab" data-tab="results" role="tab" disabled><span class="tab-index">03</span><span class="tab-label">RESULTS</span></button>
+    <button class="tab" data-tab="insights" role="tab" disabled><span class="tab-index">04</span><span class="tab-label">INSIGHTS</span></button>
+  </nav>
+
+  <main class="stage">
+    <section class="panel active" data-panel="setup">
+      <div class="panel-grid">
+        <div class="panel-side">
+          <div class="kicker">SECTION_01</div>
+          <h1 class="panel-title">Describe what to test.<br/><span class="accent">In English.</span></h1>
+          <p class="panel-desc">Two AI agents and a UiPath automation layer will turn your intent into executable tests against the real Ethereum Sepolia testnet — and review the results.</p>
+          <div class="trust-row">
+            <div class="trust-item"><span class="trust-num">2</span><span class="trust-lbl">LLM agents</span></div>
+            <div class="trust-item"><span class="trust-num">~15s</span><span class="trust-lbl">end-to-end</span></div>
+            <div class="trust-item"><span class="trust-num">live</span><span class="trust-lbl">blockchain</span></div>
+          </div>
+        </div>
+        <div class="panel-main">
+          <label for="intent" class="field-label">TESTING INTENT</label>
+          <textarea id="intent" class="intent-input" rows="6" placeholder="e.g. Test ETH wallet balance retrieval on Ethereum Sepolia testnet for a crypto payment gateway. Generate 3-5 diverse scenarios including happy path, failure cases, and edge cases."></textarea>
+          <div class="suggestions">
+            <span class="sug-label">QUICK START //</span>
+            <button class="suggestion" data-sug="balance">Balance retrieval</button>
+            <button class="suggestion" data-sug="gas">Gas estimation</button>
+            <button class="suggestion" data-sug="address">Address validation</button>
+          </div>
+          <button id="runBtn" class="run-btn">
+            <span class="run-btn-bg"></span>
+            <span class="run-btn-label">EXECUTE VALIDATION</span>
+            <span class="run-btn-arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="run">
+      <div class="kicker">SECTION_02 // EXECUTING</div>
+      <h2 class="panel-title">Agents working.</h2>
+      <p class="panel-desc">Stages stream as the workflow executes in UiPath Orchestrator.</p>
+      <div class="agents">
+        <div class="agent-card" data-agent="generator">
+          <div class="agent-num">01</div>
+          <div class="agent-body">
+            <div class="agent-name">GENERATOR</div>
+            <div class="agent-role">LLM // gemini-2.5-flash</div>
+            <div class="agent-desc">Drafts diverse test scenarios from your English intent.</div>
+            <div class="agent-status">— idle</div>
+          </div>
+          <div class="agent-marker"></div>
+        </div>
+        <div class="agent-card" data-agent="executor">
+          <div class="agent-num">02</div>
+          <div class="agent-body">
+            <div class="agent-name">EXECUTOR</div>
+            <div class="agent-role">UiPath // For Each + Sepolia RPC</div>
+            <div class="agent-desc">Runs each scenario against the live blockchain.</div>
+            <div class="agent-status">— idle</div>
+          </div>
+          <div class="agent-marker"></div>
+        </div>
+        <div class="agent-card" data-agent="analyst">
+          <div class="agent-num">03</div>
+          <div class="agent-body">
+            <div class="agent-name">ANALYST</div>
+            <div class="agent-role">LLM // gemini-2.5-flash · temp 0.3</div>
+            <div class="agent-desc">Reviews results, scores risk, drafts recommendations.</div>
+            <div class="agent-status">— idle</div>
+          </div>
+          <div class="agent-marker"></div>
+        </div>
+      </div>
+      <div class="timeline">
+        <div class="timeline-track"><div class="timeline-fill" id="timelineFill"></div></div>
+        <div class="timeline-meta">
+          <span class="timeline-elapsed" id="timelineElapsed">0.0s</span>
+          <span class="timeline-stage" id="timelineStage">awaiting…</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="results">
+      <div class="kicker">SECTION_03 // EVIDENCE</div>
+      <h2 class="panel-title">Raw blockchain results.</h2>
+      <p class="panel-desc">What the Sepolia testnet actually returned.</p>
+      <div class="results-grid">
+        <div class="results-stats">
+          <div class="stat-block"><span class="stat-label">SCENARIOS</span><span class="stat-value" id="statTotal">0</span></div>
+          <div class="stat-block pass"><span class="stat-label">PASSED</span><span class="stat-value" id="statPass">0</span></div>
+          <div class="stat-block fail"><span class="stat-label">FAILED</span><span class="stat-value" id="statFail">0</span></div>
+          <div class="stat-chart"><canvas id="resultsChart"></canvas></div>
+        </div>
+        <div class="results-list" id="resultsList"></div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="insights">
+      <div class="kicker">SECTION_04 // VERDICT</div>
+      <h2 class="panel-title">AI analyst's review.</h2>
+      <p class="panel-desc">Independent LLM reviewer evaluating the Generator's tests and the actual results.</p>
+      <div class="verdict-row">
+        <div class="verdict-block"><span class="verdict-label">OVERALL HEALTH</span><span class="verdict-value" id="overallHealth">—</span></div>
+        <div class="verdict-block"><span class="verdict-label">RISK ASSESSMENT</span><span class="verdict-value" id="riskAssessment">—</span></div>
+      </div>
+      <div class="insights-grid">
+        <div class="insight-card"><div class="insight-header">EXECUTIVE SUMMARY</div><p class="insight-body" id="executiveSummary">—</p></div>
+        <div class="insight-card"><div class="insight-header">PASS RATE</div><p class="insight-body" id="passRateSummary">—</p></div>
+      </div>
+      <div class="insights-grid two-col">
+        <div class="insight-card alarm"><div class="insight-header">CRITICAL FINDINGS</div><ul class="insight-list" id="criticalFindings"></ul></div>
+        <div class="insight-card recommend"><div class="insight-header">RECOMMENDATIONS</div><ul class="insight-list" id="recommendations"></ul></div>
+      </div>
+      <button class="run-btn ghost" id="runAgainBtn">
+        <span class="run-btn-label">RUN ANOTHER VALIDATION</span>
+        <span class="run-btn-arrow">↺</span>
+      </button>
+    </section>
+  </main>
+
+  <footer class="footplate">
+    <span class="foot-pair"><span class="foot-key">PROXY</span><span class="foot-val">localhost:3000</span></span>
+    <span class="foot-pair"><span class="foot-key">ORCHESTRATOR</span><span class="foot-val">UiPath Cloud</span></span>
+    <span class="foot-pair"><span class="foot-key">CHAIN</span><span class="foot-val">Ethereum Sepolia</span></span>
+    <span class="foot-pair"><span class="foot-key">AGENTS</span><span class="foot-val">Generator · Analyst</span></span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
