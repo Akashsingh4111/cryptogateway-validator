@@ -162,3 +162,33 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); fo
   .panel-title { font-size: 2rem; }
   .verdict-row { grid-template-columns: 1fr; }
 }
+
+
+
+.replan-banner { margin: 0 0 32px; border: 1px solid var(--line-hot); background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(0,255,208,0.04)); overflow: hidden; }
+.replan-banner.hidden { display: none; }
+.replan-header { display: flex; align-items: center; gap: 12px; padding: 18px 26px; border-bottom: 1px solid var(--line); background: rgba(124,58,237,0.06); }
+.replan-pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--purple); box-shadow: 0 0 12px var(--purple-glow); animation: pulseDot 1.6s ease-in-out infinite; flex-shrink: 0; }
+.replan-title { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.01em; }
+.replan-tag { margin-left: auto; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.18em; color: var(--cyan); padding: 4px 10px; border: 1px solid rgba(0,255,208,0.3); background: rgba(0,255,208,0.06); }
+.replan-flow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; }
+.replan-round { padding: 24px 26px; }
+.replan-round.r1 { border-right: 1px solid var(--line); }
+.replan-round-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.2em; color: var(--ink-faint); margin-bottom: 14px; }
+.replan-stat-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.replan-bignum { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1; color: var(--ink); }
+.replan-bignum .unit { font-size: 1rem; color: var(--ink-mute); font-weight: 400; }
+.replan-scenarios { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-mute); }
+.replan-health { display: inline-block; margin-top: 10px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; border: 1px solid; }
+.replan-health.healthy { color: var(--cyan); border-color: rgba(0,255,208,0.3); }
+.replan-health.warning { color: var(--yellow); border-color: rgba(250,204,21,0.3); }
+.replan-health.critical { color: var(--magenta); border-color: rgba(255,0,110,0.3); }
+.replan-arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 18px; background: rgba(124,58,237,0.04); border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.replan-arrow-glyph { font-size: 1.6rem; color: var(--cyan); text-shadow: 0 0 16px var(--cyan-glow); }
+.replan-arrow-text { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.12em; color: var(--ink-faint); text-align: center; margin-top: 6px; max-width: 90px; line-height: 1.4; }
+.replan-insight { padding: 18px 26px; border-top: 1px solid var(--line); background: rgba(0,0,0,0.15); font-size: 0.92rem; line-height: 1.6; color: var(--ink-mute); }
+.replan-insight strong { color: var(--cyan); font-weight: 500; }
+.replan-delta { font-family: var(--font-mono); font-weight: 700; font-size: 0.95rem; }
+.replan-delta.up { color: var(--cyan); }
+.replan-delta.same { color: var(--ink-mute); }
+@media (max-width: 768px) { .replan-flow { grid-template-columns: 1fr; } .replan-round.r1 { border-right: none; border-bottom: 1px solid var(--line); } .replan-arrow { flex-direction: row; gap: 10px; padding: 12px; border: none; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); } .replan-arrow-glyph { transform: rotate(90deg); } }

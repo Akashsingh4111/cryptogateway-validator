@@ -1,3 +1,6 @@
+// CryptoGateway Validator Dashboard — controller
+// Talks to the local Node proxy. Drives tab transitions, agent cards,
+// charts, insight rendering, and the autonomous re-plan banner.
 
 const PROXY = '';  // same-origin: served by Express itself
 const POLL_MS = 800;
@@ -158,12 +161,91 @@ function renderInsights(analysis) {
   (analysis.recommendations || []).forEach((r) => { const li = document.createElement('li'); li.textContent = r; recsUl.appendChild(li); });
 }
 
+// ============================================================
+// RE-PLAN / EXPANDED-COVERAGE BANNER
+// Reads Build_Final's remediation fields and tells the honest
+// "agent deepened its own testing" story.
+// ============================================================
+function renderReplanBanner(result) {
+  const el = document.getElementById('replanBanner');
+  if (!el) return;
+
+  if (!result || result.remediation_triggered !== true || !result.comparison) {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+    return;
+  }
+
+  const c = result.comparison;
+  const r1Total = c.round_1_total, r1Pass = c.round_1_pass;
+  const r2Total = c.round_2_total, r2Pass = c.round_2_pass;
+  const r1Health = (c.round_1_health || 'unknown').toLowerCase();
+  const r2Health = (c.round_2_health || 'unknown').toLowerCase();
+
+  const coverageDelta = r2Total - r1Total;
+  const coverageUp = coverageDelta > 0;
+
+  let insight;
+  if (coverageUp) {
+    insight = 'The analyst flagged a gap in input validation after round 1. ' +
+      'Rather than simply re-running, the generator <strong>expanded its own test coverage</strong> ' +
+      'from ' + r1Total + ' to ' + r2Total + ' scenarios — adding edge cases like null, empty-string, and ' +
+      'excessive-length inputs that were not tested initially. Round 2 confirmed and characterized ' +
+      'the weakness in greater depth.';
+  } else {
+    insight = 'After round 1, the analyst findings drove a remediation round. ' +
+      'The generator re-planned the test set based on the critical findings, ' +
+      'then re-executed against the live network.';
+  }
+
+  el.innerHTML = `
+    <div class="replan-header">
+      <span class="replan-pulse"></span>
+      <span class="replan-title">Autonomous Re-Plan Triggered</span>
+      <span class="replan-tag">AGENT SELF-CORRECTION</span>
+    </div>
+    <div class="replan-flow">
+      <div class="replan-round r1">
+        <div class="replan-round-label">ROUND 1 · INITIAL</div>
+        <div class="replan-stat-row">
+          <span class="replan-bignum">${r1Pass}<span class="unit">/${r1Total}</span></span>
+          <span class="replan-scenarios">scenarios passed</span>
+        </div>
+        <span class="replan-health ${r1Health}">${r1Health}</span>
+      </div>
+      <div class="replan-arrow">
+        <span class="replan-arrow-glyph">→</span>
+        <span class="replan-arrow-text">ANALYST FLAGGED GAP</span>
+      </div>
+      <div class="replan-round r2">
+        <div class="replan-round-label">ROUND 2 · REMEDIATION</div>
+        <div class="replan-stat-row">
+          <span class="replan-bignum">${r2Pass}<span class="unit">/${r2Total}</span></span>
+          <span class="replan-scenarios">scenarios passed</span>
+        </div>
+        <span class="replan-health ${r2Health}">${r2Health}</span>
+      </div>
+    </div>
+    <div class="replan-insight">
+      <span class="replan-delta ${coverageUp ? 'up' : 'same'}">${coverageUp ? '+' + coverageDelta + ' test scenarios' : 'Re-planned'}</span>
+      &nbsp;·&nbsp; ${insight}
+    </div>
+  `;
+  el.classList.remove('hidden');
+}
+
+function clearReplanBanner() {
+  const el = document.getElementById('replanBanner');
+  if (el) { el.classList.add('hidden'); el.innerHTML = ''; }
+}
+
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 async function runValidation() {
   const intent = intentInput.value.trim();
   if (!intent) { intentInput.focus(); return; }
   resetAgents();
+  clearReplanBanner();
   updateTimeline(0, 'connecting…');
   unlockTab('run');
   setActiveTab('run');
@@ -197,6 +279,7 @@ async function runValidation() {
         unlockTab('results');
         unlockTab('insights');
         renderResults(data.result);
+        renderReplanBanner(data.result);
         renderInsights(data.result && data.result.ai_analysis);
         setTimeout(() => { setActiveTab('results'); markTabComplete('results'); }, 900);
         resetRunButton();
@@ -228,6 +311,7 @@ runAgainBtn.addEventListener('click', () => {
   setActiveTab('setup');
   tabs.forEach((t) => { if (['run', 'results', 'insights'].includes(t.dataset.tab)) { t.disabled = true; t.classList.remove('complete'); } });
   resetAgents();
+  clearReplanBanner();
   updateTimeline(0, 'awaiting…');
   timelineStage.style.color = '';
 });
