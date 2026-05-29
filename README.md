@@ -1,4 +1,4 @@
-cat > README.md << 'README_EOF'
+
 # CryptoGateway Validator
 
 **AI-powered agentic testing for Web3 fintech payment flows.**
