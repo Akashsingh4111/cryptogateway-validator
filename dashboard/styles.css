@@ -192,3 +192,11 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); fo
 .replan-delta.up { color: var(--cyan); }
 .replan-delta.same { color: var(--ink-mute); }
 @media (max-width: 768px) { .replan-flow { grid-template-columns: 1fr; } .replan-round.r1 { border-right: none; border-bottom: 1px solid var(--line); } .replan-arrow { flex-direction: row; gap: 10px; padding: 12px; border: none; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); } .replan-arrow-glyph { transform: rotate(90deg); } }
+
+.tab-link { text-decoration: none; cursor: pointer; }
+.tab-link .tab-label { color: var(--cyan); }
+.tab-link:hover { background: rgba(0,255,208,0.05); }
+
+.tabs { flex-wrap: wrap; }
+.tab-link { display: inline-flex; align-items: center; }
+.tab-link .tab-index, .tab-link .tab-label { display: inline; }
