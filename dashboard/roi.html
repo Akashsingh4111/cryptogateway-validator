@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoGateway Validator — ROI Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07050d; --bg-elev: #0d0a1a; --bg-card: #110d22;
+  --line: #1f1a36; --line-hot: #2d2454;
+  --ink: #e8e6f5; --ink-mute: #8a82b3; --ink-faint: #4a4470;
+  --cyan: #00ffd0; --cyan-soft: #00b894; --cyan-glow: rgba(0,255,208,0.45);
+  --purple: #7c3aed; --purple-deep: #4c1d95; --purple-glow: rgba(124,58,237,0.4);
+  --magenta: #ff006e; --magenta-glow: rgba(255,0,110,0.45);
+  --yellow: #facc15;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font-display); }
+body {
+  background-image:
+    linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  min-height: 100vh;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 48px 32px 80px; }
+
+.topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.logo-mark { width: 14px; height: 34px; background: var(--cyan); box-shadow: 0 0 18px var(--cyan-glow); }
+.logo-text { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; letter-spacing: -0.01em; }
+.logo-sub { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.22em; color: var(--ink-faint); margin-top: 2px; }
+.back-link { margin-left: auto; font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.1em; color: var(--cyan); text-decoration: none; border: 1px solid var(--line-hot); padding: 8px 16px; transition: all .2s; }
+.back-link:hover { background: rgba(0,255,208,0.06); }
+
+.eyebrow { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.24em; color: var(--cyan); margin: 40px 0 14px; }
+h1 { font-size: 2.6rem; font-weight: 700; line-height: 1.05; margin: 0 0 16px; letter-spacing: -0.02em; }
+h1 .accent { color: var(--cyan); }
+.lede { font-size: 1.05rem; line-height: 1.6; color: var(--ink-mute); max-width: 680px; margin-bottom: 40px; }
+
+/* context strip — real cited numbers */
+.context-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 56px; }
+.context-cell { background: var(--bg-card); padding: 24px 22px; }
+.context-num { font-family: var(--font-display); font-weight: 700; font-size: 2rem; color: var(--ink); line-height: 1; }
+.context-num.magenta { color: var(--magenta); }
+.context-num.cyan { color: var(--cyan); }
+.context-num.yellow { color: var(--yellow); }
+.context-label { font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.5; color: var(--ink-mute); margin-top: 10px; }
+.context-src { font-family: var(--font-mono); font-size: 0.6rem; color: var(--ink-faint); margin-top: 8px; }
+
+.calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.panel { border: 1px solid var(--line); background: var(--bg-card); padding: 32px; }
+.panel-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em; color: var(--ink-faint); margin-bottom: 28px; }
+
+.field { margin-bottom: 28px; }
+.field-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.field-name { font-size: 0.92rem; color: var(--ink); }
+.field-val { font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem; color: var(--cyan); }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: var(--line-hot); outline: none; border-radius: 2px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan-glow); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--cyan); border: none; box-shadow: 0 0 12px var(--cyan-glow); cursor: pointer; }
+.field-hint { font-family: var(--font-mono); font-size: 0.66rem; color: var(--ink-faint); margin-top: 8px; line-height: 1.5; }
+
+.results-panel { border: 1px solid var(--line-hot); background: linear-gradient(150deg, rgba(124,58,237,0.08), rgba(0,255,208,0.03)); }
+.result-big { text-align: center; padding: 14px 0 28px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.result-big-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em; color: var(--ink-mute); margin-bottom: 14px; }
+.result-big-num { font-family: var(--font-display); font-weight: 700; font-size: 3.4rem; line-height: 1; color: var(--cyan); text-shadow: 0 0 30px var(--cyan-glow); }
+.result-big-sub { font-family: var(--font-mono); font-size: 0.74rem; color: var(--ink-mute); margin-top: 12px; }
+
+.result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 0; border-bottom: 1px dashed var(--line); }
+.result-row:last-child { border-bottom: none; }
+.result-row-label { font-size: 0.9rem; color: var(--ink-mute); }
+.result-row-val { font-family: var(--font-mono); font-weight: 500; font-size: 1rem; color: var(--ink); }
+.result-row-val.cost { color: var(--magenta); }
+.result-row-val.save { color: var(--cyan); }
+
+.roi-callout { margin-top: 28px; padding: 20px; border: 1px solid rgba(0,255,208,0.25); background: rgba(0,255,208,0.04); font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.6; color: var(--ink-mute); }
+.roi-callout strong { color: var(--cyan); font-weight: 700; }
+
+.disclaimer { margin-top: 48px; padding: 22px 26px; border-left: 2px solid var(--line-hot); background: var(--bg-elev); font-size: 0.84rem; line-height: 1.65; color: var(--ink-faint); }
+.disclaimer strong { color: var(--ink-mute); }
+
+.sources { margin-top: 40px; }
+.sources-title { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em; color: var(--ink-faint); margin-bottom: 16px; }
+.sources ol { margin: 0; padding-left: 20px; }
+.sources li { font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.7; color: var(--ink-mute); margin-bottom: 6px; }
+.sources a { color: var(--cyan-soft); text-decoration: none; }
+
+@media (max-width: 860px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .context-strip { grid-template-columns: 1fr; }
+  h1 { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo-mark"></div>
+    <div>
+      <div class="logo-text">CryptoGateway Validator</div>
+      <div class="logo-sub">BUSINESS IMPACT // ROI MODEL</div>
+    </div>
+    <a class="back-link" href="/">← BACK TO VALIDATOR</a>
+  </div>
+
+  <div class="eyebrow">SECTION_05 // THE BUSINESS CASE</div>
+  <h1>What does a validation gap<br><span class="accent">actually cost?</span></h1>
+  <p class="lede">
+    Malformed-input and address-validation failures are not theoretical — they are a documented,
+    billion-dollar failure class in crypto payments. This model estimates the return on catching
+    them <em>before</em> production, using your own team's parameters. Adjust the inputs; the math updates live.
+  </p>
+
+  <!-- Real, cited industry context -->
+  <div class="context-strip">
+    <div class="context-cell">
+      <div class="context-num magenta">$1.42B</div>
+      <div class="context-label">Collective losses documented across decentralized ecosystems (OWASP Smart Contract Top 10, 2025)</div>
+      <div class="context-src">SRC: OWASP / smart-contract incident synthesis</div>
+    </div>
+    <div class="context-cell">
+      <div class="context-num yellow">$953M</div>
+      <div class="context-label">Documented 2024 damages from access-control & input-validation vulnerability classes</div>
+      <div class="context-src">SRC: 2024 smart-contract vulnerability reporting</div>
+    </div>
+    <div class="context-cell">
+      <div class="context-num cyan">~60%</div>
+      <div class="context-label">Reduction in user-reported losses where validation / transaction-alert layers are present</div>
+      <div class="context-src">SRC: 2025 wallet-security empirical data</div>
+    </div>
+  </div>
+
+  <div class="calc-grid">
+    <!-- INPUTS -->
+    <div class="panel">
+      <div class="panel-title">YOUR ASSUMPTIONS</div>
+
+      <div class="field">
+        <div class="field-label">
+          <span class="field-name">Manual QA hours / release cycle</span>
+          <span class="field-val" id="vQaHours">40</span>
+        </div>
+        <input type="range" id="qaHours" min="5" max="160" value="40" step="5">
+        <div class="field-hint">Time a tester spends hand-writing & running gateway test cases per release.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <span class="field-name">Releases / year</span>
+          <span class="field-val" id="vReleases">24</span>
+        </div>
+        <input type="range" id="releases" min="4" max="104" value="24" step="2">
+        <div class="field-hint">How often you ship gateway changes (bi-weekly = 24).</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <span class="field-name">Blended QA cost / hour (USD)</span>
+          <span class="field-val" id="vRate">$45</span>
+        </div>
+        <input type="range" id="rate" min="15" max="120" value="45" step="5">
+        <div class="field-hint">Fully-loaded hourly cost of QA engineering time.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <span class="field-name">Automation coverage of QA effort</span>
+          <span class="field-val" id="vCoverage">70%</span>
+        </div>
+        <input type="range" id="coverage" min="20" max="95" value="70" step="5">
+        <div class="field-hint">Share of repetitive validation testing the agent can absorb.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <span class="field-name">Cost of ONE escaped validation incident (USD)</span>
+          <span class="field-val" id="vIncident">$250K</span>
+        </div>
+        <input type="range" id="incident" min="10000" max="2000000" value="250000" step="10000">
+        <div class="field-hint">Conservative: remediation, refunds, downtime, reputation. Real incidents have run into the millions.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <span class="field-name">Validation incidents avoided / year</span>
+          <span class="field-val" id="vAvoided">1.0</span>
+        </div>
+        <input type="range" id="avoided" min="0" max="10" value="5" step="1">
+        <div class="field-hint">Extra incidents caught pre-prod by automated re-planning coverage. Even a fraction of one is material.</div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="panel results-panel">
+      <div class="panel-title">ESTIMATED ANNUAL RETURN</div>
+
+      <div class="result-big">
+        <div class="result-big-label">TOTAL MODELED ANNUAL VALUE</div>
+        <div class="result-big-num" id="rTotal">$—</div>
+        <div class="result-big-sub" id="rTotalSub">labor savings + risk avoided</div>
+      </div>
+
+      <div class="result-row">
+        <span class="result-row-label">QA labor cost today (per year)</span>
+        <span class="result-row-val cost" id="rLaborNow">$—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">QA labor cost with automation</span>
+        <span class="result-row-val" id="rLaborAfter">$—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">↳ Annual labor savings</span>
+        <span class="result-row-val save" id="rLaborSave">$—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">QA engineer-hours freed / year</span>
+        <span class="result-row-val save" id="rHoursFreed">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">Risk-weighted incident loss avoided</span>
+        <span class="result-row-val save" id="rRiskAvoided">$—</span>
+      </div>
+
+      <div class="roi-callout" id="roiCallout">
+        Adjust the sliders to model your environment.
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>On honesty:</strong> This is a <em>model</em>, not measured pilot data. The labor figures derive
+    directly from your inputs; the risk-avoidance figure is a risk-weighted estimate, not a guarantee. The industry
+    loss figures in the top strip are real and cited below. We deliberately avoid claiming a specific realized ROI —
+    the point is to show the <em>order of magnitude</em>: a single escaped validation incident typically dwarfs an
+    entire year of automated testing cost.
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">SOURCES // DOCUMENTED INDUSTRY DATA</div>
+    <ol>
+      <li>OWASP Smart Contract Top 10 (2025) — &gt;$1.42B collective documented losses across decentralized ecosystems.</li>
+      <li>2024 smart-contract vulnerability reporting — access-control & input-validation classes, ~$953M documented damages.</li>
+      <li>2025 wallet-security empirical analysis — validation / transaction-alert layers correlate with ~60% lower user-reported losses.</li>
+      <li>Documented crypto payment gateway breach — $37.3M theft (gateway-specific precedent).</li>
+      <li>Wallet address checksum/validation gap — multi-year unresolved issue; address-poisoning losses in the millions.</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+const fmtUSD = (n) => {
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return '$' + Math.round(n/1e3) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+};
+const fmtUSDfull = (n) => '$' + Math.round(n).toLocaleString();
+
+const ids = ['qaHours','releases','rate','coverage','incident','avoided'];
+const els = {};
+ids.forEach(id => els[id] = document.getElementById(id));
+
+function recalc() {
+  const qaHours = parseFloat(els.qaHours.value);
+  const releases = parseFloat(els.releases.value);
+  const rate = parseFloat(els.rate.value);
+  const coverage = parseFloat(els.coverage.value) / 100;
+  const incident = parseFloat(els.incident.value);
+  const avoidedRaw = parseFloat(els.avoided.value);
+  const avoided = avoidedRaw * 0.1; // slider 0..10 -> 0.0..1.0 incidents/yr
+
+  // labor
+  const laborNow = qaHours * releases * rate;
+  const hoursFreed = qaHours * releases * coverage;
+  const laborSave = hoursFreed * rate;
+  const laborAfter = laborNow - laborSave;
+
+  // risk-weighted avoidance
+  const riskAvoided = incident * avoided;
+
+  const total = laborSave + riskAvoided;
+
+  // labels
+  document.getElementById('vQaHours').textContent = qaHours;
+  document.getElementById('vReleases').textContent = releases;
+  document.getElementById('vRate').textContent = '$' + rate;
+  document.getElementById('vCoverage').textContent = Math.round(coverage*100) + '%';
+  document.getElementById('vIncident').textContent = fmtUSD(incident);
+  document.getElementById('vAvoided').textContent = avoided.toFixed(1);
+
+  // results
+  document.getElementById('rTotal').textContent = fmtUSD(total);
+  document.getElementById('rLaborNow').textContent = fmtUSDfull(laborNow);
+  document.getElementById('rLaborAfter').textContent = fmtUSDfull(laborAfter);
+  document.getElementById('rLaborSave').textContent = fmtUSDfull(laborSave);
+  document.getElementById('rHoursFreed').textContent = Math.round(hoursFreed).toLocaleString() + ' hrs';
+  document.getElementById('rRiskAvoided').textContent = fmtUSDfull(riskAvoided);
+
+  // callout
+  const ratio = laborSave > 0 ? (riskAvoided / laborSave) : 0;
+  let msg;
+  if (avoided <= 0) {
+    msg = `On labor alone, automating <strong>${Math.round(coverage*100)}%</strong> of repetitive validation testing frees <strong>${Math.round(hoursFreed)} engineer-hours</strong> and <strong>${fmtUSDfull(laborSave)}</strong> per year — before counting a single avoided incident.`;
+  } else {
+    msg = `A single avoided validation incident (${fmtUSD(incident)}) is worth <strong>${(incident/Math.max(laborSave,1)).toFixed(1)}×</strong> the entire annual labor savings. Modeled risk-avoidance here adds <strong>${fmtUSDfull(riskAvoided)}</strong>/yr on top of <strong>${fmtUSDfull(laborSave)}</strong> in freed labor.`;
+  }
+  document.getElementById('roiCallout').innerHTML = msg;
+}
+
+ids.forEach(id => els[id].addEventListener('input', recalc));
+recalc();
+</script>
+</body>
+</html>
