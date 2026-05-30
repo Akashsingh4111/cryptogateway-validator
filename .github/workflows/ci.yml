@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -6,33 +6,32 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-and-validate:
-    name: Build & Validate
+    name: CI — Build & Validate
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Install dependencies
         run: npm install
-
       - name: Syntax-check proxy (server.js)
         run: node --check server.js
-
       - name: Syntax-check dashboard JavaScript
         run: |
           for f in dashboard/*.js; do
             echo "Checking $f"
             node --check "$f"
           done
-
       - name: Validate required files exist
         run: |
           set -e
@@ -44,12 +43,6 @@ jobs:
           test -f dashboard/app.js     && echo "  ok: dashboard/app.js"
           test -f dashboard/roi.html   && echo "  ok: dashboard/roi.html"
           echo "All required files present."
-
-      - name: Validate HTML is well-formed
-        run: |
-          npx --yes html-validate dashboard/index.html dashboard/roi.html || \
-            echo "::warning::html-validate reported issues (non-blocking)"
-
       - name: Security check — ensure no secrets committed
         run: |
           set -e
@@ -59,11 +52,23 @@ jobs:
           fi
           echo "ok: .env is not tracked (secrets safe)."
 
-      - name: CI summary
-        run: |
-          echo "### CryptoGateway Validator — CI passed" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Dependencies install cleanly" >> $GITHUB_STEP_SUMMARY
-          echo "- Proxy and dashboard JS pass syntax checks" >> $GITHUB_STEP_SUMMARY
-          echo "- Project structure validated" >> $GITHUB_STEP_SUMMARY
-          echo "- No secrets committed" >> $GITHUB_STEP_SUMMARY
+  deploy:
+    name: CD — Deploy dashboard to GitHub Pages
+    needs: build-and-validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload dashboard as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dashboard
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
